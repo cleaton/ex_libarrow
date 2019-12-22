@@ -18,11 +18,16 @@ defmodule ExLibarrow.MixProject do
     ]
   end
 
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
+    arrow_build = """
+    cd cpp && \
+    cmake -DARROW_BUILD_UTILITIES=OFF -DARROW_PARQUET=ON -DCMAKE_INSTALL_PREFIX:PATH=`pwd`/../../c_deps && \
+    make -j #{:erlang.system_info(:logical_processors_available)} && make install
+    """
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:libarrow, app: false, compile: arrow_build, git: "https://github.com/apache/arrow.git", tag: "apache-arrow-0.15.1"}
     ]
   end
 end
