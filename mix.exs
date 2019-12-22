@@ -1,3 +1,16 @@
+defmodule Mix.Tasks.Compile.ArrowNifs do
+  def run(_args) do
+    if match? {:win32, _}, :os.type do
+      {result, _error_code} = System.cmd("nmake", ["/F", "Makefile.win", "priv\\markdown.dll"], stderr_to_stdout: true)
+      IO.binwrite result
+    else
+      {result, _error_code} = System.cmd("make", ["ex_libarrow.so"], stderr_to_stdout: true)
+      IO.binwrite result
+    end
+    :ok
+  end
+end
+
 defmodule ExLibarrow.MixProject do
   use Mix.Project
 
@@ -7,7 +20,8 @@ defmodule ExLibarrow.MixProject do
       version: "0.1.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      compilers: [:arrow_nifs] ++ Mix.compilers
     ]
   end
 
