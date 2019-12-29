@@ -1,19 +1,18 @@
 #include "nif_utils.h"
-#include "constants.h"
 
 #include <string.h>
 
-ERL_NIF_TERM make_atom(ErlNifEnv* env, const char* name)
+ERL_NIF_TERM make_atom(ErlNifEnv *env, const char *name)
 {
     ERL_NIF_TERM ret;
 
-    if(enif_make_existing_atom(env, name, &ret, ERL_NIF_LATIN1))
+    if (enif_make_existing_atom(env, name, &ret, ERL_NIF_LATIN1))
         return ret;
 
     return enif_make_atom(env, name);
 }
 
-ERL_NIF_TERM make_binary(ErlNifEnv* env, const char* buff, size_t length)
+ERL_NIF_TERM make_binary(ErlNifEnv *env, const char *buff, size_t length)
 {
     ERL_NIF_TERM term;
     unsigned char *destination_buffer = enif_make_new_binary(env, length, &term);
@@ -21,35 +20,52 @@ ERL_NIF_TERM make_binary(ErlNifEnv* env, const char* buff, size_t length)
     return term;
 }
 
-ERL_NIF_TERM make_error(ErlNifEnv* env, ERL_NIF_TERM term)
+ERL_NIF_TERM make_error(ErlNifEnv *env, ERL_NIF_TERM term)
 {
     return enif_make_tuple2(env, ATOMS.atomError, term);
 }
 
-ERL_NIF_TERM make_error(ErlNifEnv* env, const char* error, size_t length)
+ERL_NIF_TERM make_error(ErlNifEnv *env, const char *error, size_t length)
 {
     return make_error(env, make_binary(env, error, length));
 }
 
-ERL_NIF_TERM make_error(ErlNifEnv* env, const char* error)
+ERL_NIF_TERM make_error(ErlNifEnv *env, const char *error)
 {
     return make_error(env, error, strlen(error));
 }
 
-ERL_NIF_TERM make_badarg(ErlNifEnv* env)
+ERL_NIF_TERM make_badarg(ErlNifEnv *env)
 {
     return enif_make_tuple2(env, ATOMS.atomError, ATOMS.atomBadArg);
 }
 
-ERL_NIF_TERM make_bad_options(ErlNifEnv* env, ERL_NIF_TERM term)
+ERL_NIF_TERM make_bad_options(ErlNifEnv *env, ERL_NIF_TERM term)
 {
     return make_error(env, enif_make_tuple(env, 2, ATOMS.atomOptions, term));
 }
 
-bool get_bstring(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifBinary* bin)
+bool get_bstring(ErlNifEnv *env, ERL_NIF_TERM term, ErlNifBinary *bin)
 {
-    if(enif_is_binary(env, term))
+    if (enif_is_binary(env, term))
         return enif_inspect_binary(env, term, bin);
 
     return enif_inspect_iolist_as_binary(env, term, bin);
+}
+
+bool get_string(ErlNifEnv *env, ERL_NIF_TERM term, std::string &str)
+{
+    ErlNifBinary bin;
+    if (enif_inspect_binary(env, term, &bin))
+    {
+        str = std::string((const char *)bin.data, bin.size);
+        return true;
+    }
+
+    return false;
+}
+
+ERL_NIF_TERM make_ok_tuple(ErlNifEnv *env, ERL_NIF_TERM term)
+{
+    return enif_make_tuple2(env, ATOMS.atomOk, term);
 }
